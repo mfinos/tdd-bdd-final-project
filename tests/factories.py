@@ -38,11 +38,19 @@ class ProductFactory(factory.Factory):
             "Shirt",
             "Apple",
             "Banana",
+            "Peach",
+            "Pear",
             "Pots",
             "Towels",
             "Ford",
             "Chevy",
+            "Torino",
             "Hammer",
+            "Fork",
+            "Spoon",
+            "Knife",
+            "Dish",
+            "Screw driver",
             "Wrench"
         ]
     )

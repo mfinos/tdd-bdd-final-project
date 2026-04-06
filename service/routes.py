@@ -68,17 +68,18 @@ def check_content_type(content_type):
 ######################################################################
 # C R E A T E   A   N E W   P R O D U C T
 ######################################################################
-@app.route("/products", methods=["POST"])
+@app.route("/products", methods=["GET", "POST"])
 def create_products():
-    """
-    Creates a Product
-    This endpoint will create a Product based the data in the body that is posted
-    """
+    # GET Logic
+    if request.method == "GET":
+        app.logger.info("Request to list products...")
+        products = Product.all()
+        results = [p.serialize() for p in products]
+        return jsonify(results), status.HTTP_200_OK
+    # POST Logic
     app.logger.info("Request to Create a Product...")
     check_content_type("application/json")
-
     data = request.get_json()
-    app.logger.info("Processing: %s", data)
     product = Product()
     product.deserialize(data)
     product.create()
@@ -87,14 +88,21 @@ def create_products():
     location_url = url_for("get_products", product_id=product.id, _external=True)
     return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
 
-
 ######################################################################
-# L I S T   A L L   P R O D U C T S
+# LIST PRODUCTS
 ######################################################################
-
-#
-# PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
-#
+@app.route("/products", methods=["GET"])
+def list_products():
+    """Returns a list of Products"""
+    app.logger.info("Request to list Products...")
+    # use the Product.all() method to retrieve all products
+    products = Product.all()
+    # create a list of serialize() products
+    results = [product.serialize() for product in products]
+    # log the number of products being returned in the list
+    app.logger.info("[%s] Products returned", len(results))
+    # return the list with a return code of status.HTTP_200_OK
+    return results, status.HTTP_200_OK
 
 ######################################################################
 # READ A PRODUCT
@@ -146,17 +154,14 @@ def update_products(product_id):
 def delete_products(product_id):
     """
     Delete a Product
-
     This endpoint will delete a Product based the id specified in the path
     """
     app.logger.info("Request to Delete a product with id [%s]", product_id)
     # use the Product.find() method to retrieve the product by the product_id
-    # if found, call the delete() method on the product
-    # return and empty body ("") with a return code of status.HTTP_204_NO_CONTENT
-    app.logger.info("Request to Delete a product with id [%s]", product_id)
-
     product = Product.find(product_id)
+    # if found, call the delete() method on the product
     if product:
         product.delete()
-
+    # return and empty body ("") with a return code of status.HTTP_204_NO_CONTENT
+    app.logger.info("Request to Delete a product with id [%s]", product_id)
     return "", status.HTTP_204_NO_CONTENT
