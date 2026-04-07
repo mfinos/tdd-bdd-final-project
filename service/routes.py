@@ -20,7 +20,7 @@ Product Store Service with UI
 """
 from flask import jsonify, request, abort
 from flask import url_for  # noqa: F401 pylint: disable=unused-import
-from service.models import Product
+from service.models import Product, Category
 from service.common import status  # HTTP Status Codes
 from . import app
 
@@ -70,6 +70,7 @@ def check_content_type(content_type):
 ######################################################################
 @app.route("/products", methods=["POST"])
 def create_products():
+    """Creates new products"""
     # GET Logic
     if request.method == "GET":
         app.logger.info("Request to list products...")
@@ -88,6 +89,7 @@ def create_products():
     location_url = url_for("get_products", product_id=product.id, _external=True)
     return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
 
+
 ######################################################################
 # LIST PRODUCTS
 ######################################################################
@@ -95,22 +97,34 @@ def create_products():
 def list_products():
     """Returns a list of Products"""
     app.logger.info("Request to list Products...")
-
-    product = []
+    # Get the `name` parameter from the request (hint: use `request.args.get()`
     name = request.args.get("name")
+    # Get the `category` parameter from the request (hint: use `request.args.get()`
+    category = request.args.get("category")
+    # Test to see if you received the "name" query parameter
+    # If you did, call the Product.find_by_name(name) method to retrieve products that match the specified name
     if name:
         app.logger.info("Find by name: %", name)
         products = Product.find_by_name(name)
+    # Test to see if you received the "category" query parameter
+    elif category:
+        app.logger.info("Find by category: %s", category)
+    # If you did, convert the category string retrieved from the query parameters to the corresponding enum value from the Category enumeration
+        category_value = getattr(Category, category.upper())
+    # Call the Product.find_by_category(category_value) method to retrieve products that match the specified category_value
+        products = Product.find_by_category(category_value)
+    # If you didn't call list all
     else:
         app.logger.info("Find all")
         products = Product.all()
-   
+    
     # create a list of serialize() products
     results = [product.serialize() for product in products]
     # log the number of products being returned in the list
     app.logger.info("[%s] Products returned", len(results))
     # return the list with a return code of status.HTTP_200_OK
     return results, status.HTTP_200_OK
+
 
 ######################################################################
 # READ A PRODUCT
@@ -154,6 +168,7 @@ def update_products(product_id):
     # call product.update() to update the product with the new data
     product.update()
     return product.serialize(), status.HTTP_200_OK
+
 
 ######################################################################
 # DELETE A PRODUCT

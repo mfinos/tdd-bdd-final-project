@@ -26,7 +26,6 @@ Test cases can be run with the following:
 """
 import os
 import logging
-import pdb
 from decimal import Decimal
 from unittest import TestCase
 from urllib.parse import quote_plus
@@ -237,7 +236,7 @@ class TestProductRoutes(TestCase):
 
     def test_delete_product(self):
         """It should Delete a Product"""
-        # create a list products containing 5 products using the _create_products() method. 
+        # create a list products containing 5 products using the _create_products() method.
         products = self._create_products(5)
         # call the self.get_product_count() method to retrieve the initial count of products before any deletion
         product_count = self.get_product_count()
@@ -283,8 +282,31 @@ class TestProductRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # retrieve the JSON data from the response
         data = response.get_json()
-        # assert that the length of the data list (i.e., the number of products returned in the response) is equal to name_count
+        # assert data list length is equal to name_count
         self.assertEqual(len(data), name_count)
-        # use a for loop to iterate through the products in the data list and checks if each product's name matches the test_name
+        # use for loop to iterate products in data list and check if product's name matches the test_name
         for product in data:
             self.assertEqual(product["name"], test_name)
+
+    def test_query_by_category(self):
+        """It should Query Products by category"""
+        products = self._create_products(10)
+        # retrieves the category of the first product in the products list and assigns it to the variable category
+        category = products[0]
+        # create a list named found, containing products from the products list whose category matches the category variable
+        found = [product for product in products if product.category == category]
+        # check the count of products match the specified category and assign it to the variable found_count
+        found_count = len(found)
+        # Log a debug message indicating the count and details of the products found
+        logging.debug("Found Products [%d] %s", found_count, found)
+        # send an HTTP GET request to the URL specified by the BASE_URL variable, along with a query parameter "category"
+        response = self.client.get(BASE_URL, query_string=f"category={category.name}")
+        # assert that response status code is 200, indicating a successful request (HTTP 200 OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # retrieve the JSON data from the response
+        data = response.get_json()
+        # assert that the length of the data list is equal to found_count
+        self.assertEqual(len(data), found_count)
+        # use for loop to check products in data list belong to the queried category
+        for product in data:
+        #    self.assertEqual(product["category"], category.name)
