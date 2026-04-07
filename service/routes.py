@@ -101,6 +101,8 @@ def list_products():
     name = request.args.get("name")
     # Get the `category` parameter from the request (hint: use `request.args.get()`
     category = request.args.get("category")
+    # Get the `available` parameter from the request (hint: use `request.args.get()`
+    available = request.args.get("available")
     # Test to see if you received the "name" query parameter
     # If you did, call the Product.find_by_name(name) method to retrieve products that match the specified name
     if name:
@@ -109,15 +111,22 @@ def list_products():
     # Test to see if you received the "category" query parameter
     elif category:
         app.logger.info("Find by category: %s", category)
-    # If you did, convert the category string retrieved from the query parameters to the corresponding enum value from the Category enumeration
+    # If you did, convert category string retrieved from the query to corresponding enum value from the Category enumeration
         category_value = getattr(Category, category.upper())
     # Call the Product.find_by_category(category_value) method to retrieve products that match the specified category_value
         products = Product.find_by_category(category_value)
-    # If you didn't call list all
+    # Test to see if you received the "available" query parameter
+    elif available:
+        app.logger.info("Find by available: %s", available)
+    # If you did, convert the available string retrieved from the query parameters to a boolean value
+        available_value = available.lower() in ["true", "yes", "1"]
+    # call Product.find_by_availability(available_value) method to retrieve matching products
+        products = Product.find_by_availability(available_value)
+    # Otherwise list all products
     else:
         app.logger.info("Find all")
         products = Product.all()
-    
+
     # create a list of serialize() products
     results = [product.serialize() for product in products]
     # log the number of products being returned in the list
