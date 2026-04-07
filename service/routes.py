@@ -68,7 +68,7 @@ def check_content_type(content_type):
 ######################################################################
 # C R E A T E   A   N E W   P R O D U C T
 ######################################################################
-@app.route("/products", methods=["GET", "POST"])
+@app.route("/products", methods=["POST"])
 def create_products():
     # GET Logic
     if request.method == "GET":
@@ -95,8 +95,16 @@ def create_products():
 def list_products():
     """Returns a list of Products"""
     app.logger.info("Request to list Products...")
-    # use the Product.all() method to retrieve all products
-    products = Product.all()
+
+    product = []
+    name = request.args.get("name")
+    if name:
+        app.logger.info("Find by name: %", name)
+        products = Product.find_by_name(name)
+    else:
+        app.logger.info("Find all")
+        products = Product.all()
+   
     # create a list of serialize() products
     results = [product.serialize() for product in products]
     # log the number of products being returned in the list
